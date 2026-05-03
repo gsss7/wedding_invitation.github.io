@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Глеб & Яна — 4 июня</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Nunito:wght@400;600;700;800&family=Schoolbell&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --lavender: #c8a8d8;
+  --lavender-light: #ddc4e8;
+  --lavender-dark: #9e72b8;
+  --pink: #e8759a;
+  --pink-light: #f2a8be;
+  --pink-dark: #d04e7a;
+  --green: #7a9e52;
+  --green-light: #a8c47a;
+  --cream: #fdf5e8;
+  --cream-dark: #f5e8d0;
+  --text-dark: #3d2a4a;
+  --text-mid: #6b4d7a;
+  --font-hand: 'Caveat', cursive;
+  --font-body: 'Nunito', sans-serif;
+  --font-cartoon: 'Schoolbell', 'Caveat', cursive;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--lavender);
+  background-image:
+    radial-gradient(ellipse 80% 40% at 20% 10%, #ddb8ee 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 90%, #c890d8 0%, transparent 60%);
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--text-dark);
+  overflow-x: hidden;
+}
+
+/* ─── FLOATING DECO ─── */
+.deco-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* ─── INTRO OVERLAY ─── */
+#intro-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #ddc4e8 0%, #f2a8be 50%, #c8a8d8 100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  will-change: opacity, transform;
+  -webkit-tap-highlight-color: transparent;
+}
+#intro-overlay.out {
+  opacity: 0;
+  transform: scale(1.05);
+  pointer-events: none;
+}
+
+.intro-flower {
+  font-size: 3rem;
+  animation: spin 3s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.intro-word {
+  font-family: var(--font-hand);
+  font-size: clamp(2rem, 8vw, 5rem);
+  font-weight: 700;
+  color: var(--text-dark);
+  opacity: 0;
+  transform: scale(0.5) rotate(-5deg);
+  text-align: center;
+  line-height: 1.1;
+}
+.intro-word.show {
+  animation: introPop 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes introPop {
+  to { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.intro-names {
+  font-size: clamp(3rem, 12vw, 8rem);
+  color: var(--pink-dark);
+}
+.intro-date {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  color: var(--text-mid);
+  opacity: 0;
+  animation: fadeIn 0.5s 2.2s ease forwards;
+  letter-spacing: 0.15em;
+  font-weight: 600;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* ─── PAGE LAYOUT ─── */
+.page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 40px) clamp(16px, 4vw, 32px) 60px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── CARD ─── */
+.card {
+  background: var(--cream);
+  border-radius: 24px;
+  padding: clamp(20px, 5vw, 32px);
+  position: relative;
+  box-shadow: 0 4px 24px oklch(40% 0.08 300 / 0.18), 0 1px 0 rgba(255,255,255,0.8) inset;
+  opacity: 0;
+  transform: translateY(48px) rotate(var(--card-tilt, 0deg));
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s;
+}
+.card.visible {
+  opacity: 1;
+  transform: translateY(0) rotate(var(--card-tilt, 0deg));
+}
+.card:hover {
+  box-shadow: 0 8px 40px oklch(40% 0.08 300 / 0.25), 0 1px 0 rgba(255,255,255,0.8) inset;
+  transform: translateY(-3px) rotate(var(--card-tilt, 0deg));
+}
+
+.card-pink  { background: linear-gradient(135deg, #fff5f8 0%, #fce8f0 100%); }
+.card-green { background: linear-gradient(135deg, #f2f8ec 0%, #e4f0d8 100%); }
+.card-cream { background: var(--cream); }
+
+/* ─── SECTION HEADERS ─── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+.section-header-inner {
+  background: var(--lavender);
+  border-radius: 999px;
+  padding: 0.4rem 1.5rem;
+  border: 2px solid var(--lavender-dark);
+}
+.section-title {
+  font-family: var(--font-hand);
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  font-weight: 700;
+  color: var(--text-dark);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.section-header-inner.pink-bg {
+  background: var(--pink-light);
+  border-color: var(--pink-dark);
+}
+.section-header-inner.green-bg {
+  background: var(--green-light);
+  border-color: var(--green);
+}
+.header-flower {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+/* ─── HERO CARD ─── */
+.hero-card {
+  background: linear-gradient(160deg, #f8eef8 0%, #fce4f0 100%);
+  text-align: center;
+  --card-tilt: -1deg;
+}
+.hero-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--lavender-dark);
+  margin-bottom: 0.5rem;
+}
+.hero-names {
+  font-family: var(--font-hand);
+  font-size: clamp(3rem, 10vw, 5rem);
+  font-weight: 700;
+  color: var(--pink-dark);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+  text-shadow: 2px 3px 0 oklch(80% 0.12 340 / 0.25);
+}
+.hero-amp {
+  font-size: 0.6em;
+  color: var(--lavender-dark);
+  display: block;
+  margin: 0.1em 0;
+}
+.hero-tagline {
+  font-family: var(--font-hand);
+  font-size: clamp(1rem, 3vw, 1.3rem);
+  color: var(--text-mid);
+  margin-bottom: 1.2rem;
+}
+.hero-date-badge {
+  display: inline-block;
+  background: var(--lavender);
+  border: 2px solid var(--lavender-dark);
+  border-radius: 999px;
+  padding: 0.4rem 1.4rem;
+  font-family: var(--font-hand);
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+/* Photo placeholder in hero */
+.photo-placeholder {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      oklch(85% 0.04 320 / 0.4) 0px,
+      oklch(85% 0.04 320 / 0.4) 1px,
+      transparent 1px,
+      transparent 12px
+    ),
+    linear-gradient(135deg, #f8e0f0, #eeddf8);
+  border-radius: 16px;
+  border: 2px dashed var(--pink-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  color: var(--text-mid);
+  font-family: var(--font-hand);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.photo-placeholder span { opacity: 0.6; font-size: 0.8rem; font-family: var(--font-body); }
+
+/* ─── COUNTDOWN ─── */
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(8px, 2vw, 16px);
+}
+.cd-unit {
+  background: white;
+  border-radius: 16px;
+  padding: clamp(10px, 2vw, 16px) 8px;
+  text-align: center;
+  border: 2px solid var(--pink-light);
+  box-shadow: 0 3px 0 var(--pink-light);
+  position: relative;
+  overflow: hidden;
+}
+.cd-unit::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(to right, var(--pink), var(--lavender-dark));
+}
+.cd-num {
+  font-family: var(--font-hand);
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  font-weight: 700;
+  color: var(--pink-dark);
+  line-height: 1;
+  display: block;
+}
+.cd-num.flip {
+  animation: cdFlip 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes cdFlip {
+  0%  { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg);  opacity: 1; }
+}
+.cd-label {
+  font-size: clamp(0.55rem, 1.5vw, 0.7rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lavender-dark);
+  margin-top: 4px;
+}
+
+/* ─── PROGRAM ─── */
+.prog-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-bottom: 2px dashed var(--lavender-light);
+}
+.prog-item:last-child { border-bottom: none; }
+.prog-time {
+  font-family: var(--font-hand);
+  font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+  font-weight: 700;
+  color: var(--pink-dark);
+  min-width: 72px;
+  flex-shrink: 0;
+}
+.prog-dash {
+  color: var(--lavender-dark);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.prog-event {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  font-weight: 600;
+  color: var(--text-dark);
+}
+.prog-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px oklch(62% 0.12 140 / 0.2);
+}
+
+/* ─── MUSIC ─── */
+.music-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.music-label {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  margin-bottom: 0.2rem;
+}
+.music-input {
+  width: 100%;
+  background: white;
+  border: 2px solid var(--lavender);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.music-input:focus {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px oklch(70% 0.12 340 / 0.15);
+}
+.music-input::placeholder { color: #bba8c8; }
+.music-btn {
+  background: linear-gradient(135deg, var(--pink) 0%, var(--pink-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 2rem;
+  font-family: var(--font-hand);
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 0 var(--pink-dark);
+  margin-top: 0.3rem;
+  align-self: center;
+}
+.music-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--pink-dark);
+}
+.music-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--pink-dark);
+}
+.music-track-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.music-track {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: white;
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  border: 2px solid var(--lavender-light);
+  animation: trackIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes trackIn {
+  from { opacity: 0; transform: scale(0.8) rotate(-3deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.track-num { font-family: var(--font-hand); color: var(--pink); font-weight: 700; font-size: 1.1rem; min-width: 24px; }
+.track-name { font-weight: 700; font-size: 0.9rem; flex: 1; }
+.track-author { font-size: 0.8rem; color: var(--text-mid); font-style: italic; }
+
+/* ─── CLOSING ─── */
+.closing-card {
+  text-align: center;
+  --card-tilt: 1deg;
+  background: linear-gradient(135deg, #fce8f0 0%, #eeddf8 100%);
+}
+.closing-text {
+  font-family: var(--font-hand);
+  font-size: clamp(1.8rem, 6vw, 3rem);
+  color: var(--pink-dark);
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+.closing-sub {
+  font-family: var(--font-body);
+  color: var(--text-mid);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+.closing-flowers {
+  font-size: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.closing-flowers span {
+  display: inline-block;
+  animation: wobble 2s ease-in-out infinite;
+}
+.closing-flowers span:nth-child(2) { animation-delay: 0.3s; }
+.closing-flowers span:nth-child(3) { animation-delay: 0.6s; }
+@keyframes wobble {
+  0%,100% { transform: rotate(-8deg) scale(1); }
+  50%      { transform: rotate(8deg) scale(1.1); }
+}
+
+@keyframes resultPop {
+  from { opacity: 0; transform: scale(0.5) rotate(-5deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes heartbeat {
+  0%,100% { transform: scale(1); }
+  30%     { transform: scale(1.25); }
+  60%     { transform: scale(0.95); }
+}
+
+/* ─── WAVY DIVIDER ─── */
+.wavy-divider {
+  width: 100%;
+  overflow: visible;
+  margin: -8px 0;
+  display: block;
+}
+
+/* ─── SCROLL WAVY BG ─── */
+.wavy-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  transition: opacity 0.5s;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 400px) {
+  .countdown-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro-overlay">
+  <div class="intro-flower">🌸</div>
+  <div class="intro-word" id="iw-wedding">Свадьба!</div>
+  <div class="intro-word intro-names" id="iw-names">Глеб & Яна</div>
+  <div class="intro-date" id="iw-date">4 · ИЮНЯ · 2026</div>
+  <div style="position:absolute;bottom:32px;font-family:var(--font-body);font-size:0.75rem;color:var(--text-mid);opacity:0.6;letter-spacing:0.1em;">нажмите чтобы пропустить</div>
+</div>
+
+<!-- ANIMATED WAVY BG -->
+<svg class="wavy-bg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <path d="M-100,200 Q100,100 300,200 T700,200 T1100,200" stroke="#e87aaa" stroke-width="3" fill="none" opacity="0.5">
+    <animateTransform attributeName="transform" type="translate" from="0,0" to="-200,40" dur="8s" repeatCount="indefinite"/>
+  </path>
+  <path d="M-100,350 Q150,250 350,350 T750,350 T1150,350" stroke="#9e72b8" stroke-width="2.5" fill="none" opacity="0.4">
+    <animateTransform attributeName="transform" type="translate" from="0,0" to="200,-30" dur="10s" repeatCount="indefinite"/>
+  </path>
+  <path d="M-100,480 Q200,380 400,480 T800,480" stroke="#7a9e52" stroke-width="2" fill="none" opacity="0.35">
+    <animateTransform attributeName="transform" type="translate" from="0,0" to="-150,20" dur="12s" repeatCount="indefinite"/>
+  </path>
+  <path d="M-200,100 Q100,50 300,150 T700,100" stroke="#e87aaa" stroke-width="1.5" fill="none" opacity="0.3">
+    <animateTransform attributeName="transform" type="translate" from="0,0" to="180,50" dur="9s" repeatCount="indefinite"/>
+  </path>
+</svg>
+
+<!-- FLOATING FLOWERS CANVAS -->
+<div class="deco-canvas" id="deco-canvas"></div>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="card hero-card">
+    <p class="hero-eyebrow">Дорогие родные и близкие!</p>
+    <div class="hero-names">
+      Глеб
+      <span class="hero-amp">&</span>
+      Яна
+    </div>
+    <p class="hero-tagline">У нас для вас прекрасная новость! 💕</p>
+    
+    <!-- Контейнер для надписи и PNG (теперь без серого фона) -->
+    <div style="display: flex; flex-direction: column; align-items: center; margin: 2rem 0; background: transparent;">
+      <div style="
+        font-family: var(--font-hand); 
+        font-size: clamp(3rem, 10vw, 5rem); 
+        font-weight: 700; 
+        color: var(--pink-dark); 
+        line-height: 1; 
+        text-shadow: 2px 3px 0 oklch(80% 0.12 340 / 0.25); 
+        margin-bottom: 0.5rem;
+      ">
+        Мы женимся!
+      </div>
+      <img src="my_zhenimsya.png" alt="Мы женимся" style="width: 100%; height: auto; display: block;">
+    </div>
+
+    <div class="hero-date-badge">04 | 06 | 26 · Томск</div>
+  </div>
+
+  <!-- DEAR GUESTS CARD -->
+  <div class="card card-cream" style="--card-tilt:0.7deg">
+    <!-- decorative flowers -->
+    <div style="position:absolute;top:-10px;right:12px;font-size:2.2rem;opacity:0.55;transform:rotate(15deg);pointer-events:none;">🌸</div>
+    <div style="position:absolute;top:20px;left:-8px;font-size:1.6rem;opacity:0.4;transform:rotate(-20deg);pointer-events:none;">🌿</div>
+    <div style="position:absolute;bottom:12px;right:-6px;font-size:1.8rem;opacity:0.4;transform:rotate(10deg);pointer-events:none;">🌼</div>
+
+    <h2 style="font-family:var(--font-hand);font-size:clamp(1.8rem,6vw,2.4rem);font-weight:700;color:var(--pink-dark);text-align:center;margin-bottom:0.9rem;">Дорогие гости!</h2>
+
+    <p style="font-family:var(--font-cartoon);font-size:clamp(1.05rem,3vw,1.2rem);color:var(--text-mid);text-align:center;line-height:1.7;margin-bottom:1.4rem;">
+      Вы — наша семья, наши друзья, наши близкие люди!<br>
+      Спасибо, что вы разделяете этот важный день вместе с нами.<br>
+      Мы начинаем новую главу своей жизни, и нам особенно дорого,<br>
+      что вы — часть этой истории.
+    </p>
+
+    <!-- Couple photos -->
+    <div id="couple-photos" style="display:flex;justify-content:center;gap:clamp(1.5rem,6vw,3rem);align-items:center;position:relative;cursor:pointer;">
+      <!-- groom -->
+      <div class="photo-person" id="photo-groom" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;transition:transform 0.55s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s;order:1;">
+        <div style="
+          width:clamp(110px,28vw,150px);
+          height:clamp(110px,28vw,150px);
+          border-radius:50%;
+          background: repeating-linear-gradient(45deg,oklch(82% 0.06 340/0.3) 0px,oklch(82% 0.06 340/0.3) 1px,transparent 1px,transparent 10px), linear-gradient(135deg,#f0e0f8,#fce4f0);
+          border:4px solid var(--pink-light);
+          display:flex;align-items:center;justify-content:center;
+          font-size:2.5rem;
+          box-shadow:0 4px 16px oklch(60% 0.1 340/0.2);
+          overflow:hidden;
+          flex-shrink:0;
+        "><img src="Gleb.png" alt="Глеб" style="width:100%; height:100%; object-fit:cover;"></div>
+        <div style="font-family:var(--font-cartoon);font-size:1.6rem;font-weight:700;color:var(--pink-dark);transform:rotate(-5deg);">Жених</div>
+        <div style="font-family:var(--font-cartoon);font-size:1.5rem;color:var(--text-mid);">Глеб</div>
+      </div>
+
+      <!-- heart in middle -->
+      <div id="couple-heart" style="font-size:2rem;color:var(--pink);animation:heartbeat 1.2s ease-in-out infinite;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);align-self:center;flex-shrink:0;order:2;">💕</div>
+
+      <!-- bride -->
+      <div class="photo-person" id="photo-bride" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;transition:transform 0.55s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s;order:3;">
+        <div style="
+          width:clamp(110px,28vw,150px);
+          height:clamp(110px,28vw,150px);
+          border-radius:50%;
+          background: repeating-linear-gradient(45deg,oklch(82% 0.06 280/0.3) 0px,oklch(82% 0.06 280/0.3) 1px,transparent 1px,transparent 10px), linear-gradient(135deg,#eeddf8,#fce4f0);
+          border:4px solid var(--lavender);
+          display:flex;align-items:center;justify-content:center;
+          font-size:2.5rem;
+          box-shadow:0 4px 16px oklch(60% 0.1 300/0.2);
+          overflow:hidden;
+          flex-shrink:0;
+        "><img src="Ya.png" alt="Яна" style="width:100%; height:100%; object-fit:cover;"></div>
+        <div style="font-family:var(--font-cartoon);font-size:1.6rem;font-weight:700;color:var(--lavender-dark);transform:rotate(5deg);">Невеста</div>
+        <div style="font-family:var(--font-cartoon);font-size:1.5rem;color:var(--text-mid);">Яна</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- WAVY -->
+  <svg class="wavy-divider" viewBox="0 0 560 30" xmlns="http://www.w3.org/2000/svg" height="30">
+    <path d="M0,15 Q70,30 140,15 T280,15 T420,15 T560,15" stroke="#9e72b8" stroke-width="2.5" fill="none" opacity="0.5"/>
+  </svg>
+
+  <!-- COUNTDOWN -->
+  <div class="card card-pink" style="--card-tilt:0.8deg">
+    <div class="section-header">
+      <span class="header-flower">🌷</span>
+      <div class="section-header-inner pink-bg">
+        <span class="section-title">до свадьбы</span>
+      </div>
+      <span class="header-flower">🌷</span>
+    </div>
+    <div class="countdown-grid">
+      <div class="cd-unit">
+        <span class="cd-num" id="cd-days">--</span>
+        <div class="cd-label">дней</div>
+      </div>
+      <div class="cd-unit">
+        <span class="cd-num" id="cd-hours">--</span>
+        <div class="cd-label">часов</div>
+      </div>
+      <div class="cd-unit">
+        <span class="cd-num" id="cd-minutes">--</span>
+        <div class="cd-label">минут</div>
+      </div>
+      <div class="cd-unit">
+        <span class="cd-num" id="cd-seconds">--</span>
+        <div class="cd-label">секунд</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WAVY -->
+  <svg class="wavy-divider" viewBox="0 0 560 30" xmlns="http://www.w3.org/2000/svg" height="30">
+    <path d="M0,15 Q70,30 140,15 T280,15 T420,15 T560,15" stroke="#9e72b8" stroke-width="2.5" fill="none" opacity="0.5"/>
+  </svg>
+
+  <!-- PROGRAM -->
+  <div class="card card-cream" style="--card-tilt:-0.6deg">
+    <div class="section-header">
+      <span class="header-flower">🌿</span>
+      <div class="section-header-inner green-bg">
+        <span class="section-title">во сколько?</span>
+      </div>
+      <span class="header-flower">🌿</span>
+    </div>
+    <div class="prog-item">
+      <div class="prog-dot"></div>
+      <div class="prog-time">15:00</div>
+      <div class="prog-dash">—</div>
+      <div class="prog-event">Торжественная регистрация брака</div>
+    </div>
+    <div class="prog-item">
+      <div class="prog-dot"></div>
+      <div class="prog-time">15:30</div>
+      <div class="prog-dash">—</div>
+      <div class="prog-event">Фотосессия</div>
+    </div>
+    <div class="prog-item">
+      <div class="prog-dot"></div>
+      <div class="prog-time">17:00</div>
+      <div class="prog-dash">—</div>
+      <div class="prog-event">Праздничный банкет</div>
+    </div>
+    <div class="prog-item">
+      <div class="prog-dot"></div>
+      <div class="prog-time">00:00</div>
+      <div class="prog-dash">—</div>
+      <div class="prog-event">Окончание праздничного дня </div>
+    </div>
+  </div>
+
+  <!-- WAVY DIVIDER -->
+  <svg class="wavy-divider" viewBox="0 0 560 30" xmlns="http://www.w3.org/2000/svg" height="30">
+    <path d="M0,15 Q70,30 140,15 T280,15 T420,15 T560,15" stroke="#7a9e52" stroke-width="2.5" fill="none" opacity="0.5"/>
+  </svg>
+
+  <!-- FAQ DETAILS -->
+  <div class="card card-green" style="--card-tilt:0.5deg">
+    <div class="section-header">
+      <span class="header-flower">📍</span>
+      <div class="section-header-inner green-bg">
+        <span class="section-title">важные детали</span>
+      </div>
+      <span class="header-flower">📍</span>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:1.2rem; font-family:var(--font-cartoon); color:var(--text-mid); line-height:1.5; font-size: 1.05rem;">
+      <div>
+        <strong style="color:var(--green); display:block; margin-bottom:0.2rem; font-family:var(--font-hand); font-size: 1.4rem;">Где всё будет?</strong>
+        Торжественная часть пройдёт в самом сердце города: <br>
+        <b>г. Томск, проспект Ленина, 83</b>. <br><br>
+        После мы отправимся на праздничный банкет по адресу: <br>
+        <b>деревня Кисловка, улица Придорожная, 3</b>.
+      </div>
+
+      <div>
+        <strong style="color:var(--green); display:block; margin-bottom:0.2rem; font-family:var(--font-hand); font-size: 1.4rem;">Что взять с собой?</strong>
+        Чтобы вам было максимально уютно, захватите сменную одежду — лето обещает быть тёплым! <br><br>
+        А так как на территории нас ждут освежающий бассейн и банька, не забудьте прихватить с собой купальники и всё необходимое для плавания.
+      </div>
+    </div>
+  </div>
+	
+  <!-- ROULETTE -->
+  <div id="roulette-root"></div>
+
+  <!-- CLOSING -->
+  <div class="card closing-card">
+    <p class="closing-text">С нетерпением ждём!</p>
+    <p class="closing-sub">Глеб & Яна · 4 июня 2026 · Томск</p>
+    <div class="closing-flowers">
+      <span>🌸</span><span>💕</span><span>🌸</span>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "bgColor": "#cea8e1",
+  "accentPink": "#ec749a",
+  "accentGreen": "#7a9e52",
+  "showPhoto": true
+}/*EDITMODE-END*/;
+
+// ─── ROULETTE ───
+const WHEEL_SEGMENTS = [
+  { line1: 'Кричать',      line2: 'ГОРЬКО!',       color: '#fce4ec', border: '#e8759a' },
+  { line1: 'Не дарить',    line2: 'подарок',        color: '#d4f0c0', border: '#7a9e52' },
+  { line1: 'ПРОИГРЫШ!',    line2: 'Твой конкурс',   color: '#fff3cd', border: '#f4a460', isLoss: true },
+  { line1: 'Поцеловать',   line2: 'жениха',         color: '#fce8f4', border: '#e8759a' },
+  { line1: 'Устроить',     line2: 'драку!',          color: '#ffe0b2', border: '#f4a460' },
+  { line1: 'Украсть',      line2: 'невесту!',       color: '#e8d5f5', border: '#9e72b8' },
+];
+const SEGMENT_COUNT = WHEEL_SEGMENTS.length;
+const LOSS_IDX = WHEEL_SEGMENTS.findIndex(s => s.isLoss);
+const LOSS_DATA = { 
+  emoji: '🎤', 
+  text: 'ПРОИГРЫШ!\nСтань ведущим на 2 минуты: придумай и проведи быстрый конкурс для своего стола!', 
+  color: '#fff3cd', 
+  border: '#f4a460', 
+  isLoss: true 
+};
+
+function RouletteSection() {
+  const canvasRef = React.useRef(null);
+  const [spinning, setSpinning] = useState(false);
+  const [result, setResult] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const spinRef = React.useRef({ angle: 0, raf: null });
+
+  const size = Math.min(360, window.innerWidth - 48);
+
+  function drawWheel(angle) {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2;
+    const R = Math.min(cx, cy) - 6;
+    const arc = (2 * Math.PI) / SEGMENT_COUNT;
+
+    ctx.clearRect(0, 0, W, H);
+
+    for (let i = 0; i < SEGMENT_COUNT; i++) {
+      const seg = WHEEL_SEGMENTS[i];
+      const start = angle + i * arc;
+      const end = start + arc;
+
+      // Segment fill
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, start, end);
+      ctx.closePath();
+      ctx.fillStyle = seg.color;
+      ctx.fill();
+      ctx.strokeStyle = seg.border;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Text — two lines inside sector
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start + arc / 2);
+
+      const fontSize = Math.max(10, R * 0.092);
+      ctx.font = `bold ${fontSize}px Nunito, sans-serif`;
+      ctx.fillStyle = seg.isLoss ? '#c0392b' : '#3d2a4a';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const textR = R * 0.62; // distance from centre
+      const lineH = fontSize * 1.25;
+      ctx.fillText(seg.line1, textR, -lineH / 2);
+      ctx.fillText(seg.line2, textR, lineH / 2);
+
+      ctx.restore();
+    }
+
+    // Outer ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, 2 * Math.PI);
+    ctx.strokeStyle = 'rgba(200,100,180,0.25)';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    // Center circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 0.1, 0, 2 * Math.PI);
+    ctx.fillStyle = '#e8759a';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Pointer — small notch on the right edge, no triangle outside
+    const px = cx + R;
+    ctx.beginPath();
+    ctx.moveTo(px - 22, cy);
+    ctx.lineTo(px + 4, cy - 11);
+    ctx.lineTo(px + 4, cy + 11);
+    ctx.closePath();
+    ctx.fillStyle = '#e8759a';
+    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+    ctx.shadowBlur = 4;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  useEffect(() => { drawWheel(spinRef.current.angle); }, []);
+
+  function spin() {
+    if (spinning) return;
+    setSpinning(true);
+    setShowResult(false);
+    setResult(null);
+
+    const arc = (2 * Math.PI) / SEGMENT_COUNT;
+    // Always land on LOSS_IDX — pointer at 3 o'clock (angle = 0 from centre)
+    // Segment i occupies [baseAngle + i*arc, baseAngle + (i+1)*arc]
+    // Centre of LOSS segment should be at pointer (0 rad):
+    //   currentAngle + LOSS_IDX*arc + arc/2 ≡ 0  →  delta = -(currentAngle + LOSS_IDX*arc + arc/2)
+    // Add multiple full rotations for drama
+    const fullRots = (8 + Math.floor(Math.random() * 5)) * 2 * Math.PI;
+    const currentAngle = spinRef.current.angle % (2 * Math.PI);
+    const lossCenter = LOSS_IDX * arc + arc / 2;
+    // How much extra to rotate so LOSS lands at 0
+    let delta = (-currentAngle - lossCenter) % (2 * Math.PI);
+    if (delta < 0) delta += 2 * Math.PI;
+    const totalRotation = fullRots + delta;
+
+    const startAngle = spinRef.current.angle;
+    const duration = 4000 + Math.random() * 1200;
+    const startTime = performance.now();
+
+    function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+
+    function animate(now) {
+      const t = Math.min((now - startTime) / duration, 1);
+      spinRef.current.angle = startAngle + totalRotation * easeOut(t);
+      drawWheel(spinRef.current.angle);
+      if (t < 1) {
+        spinRef.current.raf = requestAnimationFrame(animate);
+      } else {
+        // Snap exactly to LOSS position
+        spinRef.current.angle = startAngle + totalRotation;
+        drawWheel(spinRef.current.angle);
+        setTimeout(() => {
+          setResult(LOSS_DATA);
+          setShowResult(true);
+          setSpinning(false);
+        }, 400);
+      }
+    }
+    spinRef.current.raf = requestAnimationFrame(animate);
+  }
+
+  return (
+    <div className="card" style={{"--card-tilt":"-0.5deg", background:'linear-gradient(135deg,#fff5f8 0%,#f5eeff 100%)'}}>
+      <div className="section-header">
+        <span className="header-flower">🎰</span>
+        <div className="section-header-inner pink-bg">
+          <span className="section-title">рулетка гостя</span>
+        </div>
+        <span className="header-flower">🎰</span>
+      </div>
+
+      <p style={{fontFamily:'var(--font-cartoon)', fontSize:'1.05rem', color:'var(--text-mid)', textAlign:'center', marginBottom:'1.2rem', lineHeight:1.4}}>
+        Крути и узнай своё задание на вечер! 🎲
+      </p>
+
+      <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:'1rem'}}>
+        <div style={{position:'relative', display:'inline-block'}}>
+          <canvas
+            ref={canvasRef}
+            width={size}
+            height={size}
+            style={{display:'block', borderRadius:'50%', boxShadow:'0 6px 32px rgba(180,100,180,0.3)', border:'4px solid var(--pink-light)'}}
+          />
+        </div>
+
+        <button
+          onClick={spin}
+          disabled={spinning}
+          style={{
+            background: spinning ? '#ccc' : 'linear-gradient(135deg, var(--pink) 0%, var(--pink-dark) 100%)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '999px',
+            padding: '0.9rem 2.5rem',
+            fontFamily: 'var(--font-hand)',
+            fontSize: '1.4rem',
+            fontWeight: 700,
+            cursor: spinning ? 'not-allowed' : 'pointer',
+            boxShadow: spinning ? 'none' : '0 4px 0 var(--pink-dark)',
+            transition: 'all 0.2s',
+            transform: spinning ? 'scale(0.97)' : '',
+          }}
+        >
+          {spinning ? 'Крутится... 🌀' : '🎰 Крутить!'}
+        </button>
+
+        {showResult && result && (
+          <div style={{
+            background: result.color,
+            border: `3px solid ${result.border}`,
+            borderRadius: '20px',
+            padding: '1.2rem 1.8rem',
+            textAlign: 'center',
+            animation: 'resultPop 0.5s cubic-bezier(0.34,1.56,0.64,1)',
+            maxWidth: '100%',
+            width: '100%',
+          }}>
+            <div style={{fontSize:'3rem', marginBottom:'0.4rem'}}>{result.emoji}</div>
+            <div style={{
+              fontFamily: 'var(--font-hand)',
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              color: '#c0392b',
+              whiteSpace: 'pre-line',
+              lineHeight: 1.3,
+            }}>
+              {result.text}
+            </div>
+            <div style={{fontFamily:'var(--font-cartoon)', fontSize:'0.95rem', color:'var(--text-mid)', marginTop:'0.5rem'}}>
+              Ничего личного — так выпало 😇
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── TWEAKS APP ───
+function TweaksApp() {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--lavender', tweaks.bgColor);
+    document.documentElement.style.setProperty('--pink', tweaks.accentPink);
+    document.documentElement.style.setProperty('--green', tweaks.accentGreen);
+  }, [tweaks.bgColor, tweaks.accentPink, tweaks.accentGreen]);
+
+  return (
+    <TweaksPanel title="Tweaks">
+      <TweakSection label="Цвета">
+        <TweakColor label="Фон (лаванда)" value={tweaks.bgColor} onChange={v => setTweak('bgColor', v)}/>
+        <TweakColor label="Акцент розовый" value={tweaks.accentPink} onChange={v => setTweak('accentPink', v)}/>
+        <TweakColor label="Акцент зелёный" value={tweaks.accentGreen} onChange={v => setTweak('accentGreen', v)}/>
+      </TweakSection>
+      <TweakSection label="Фото">
+        <TweakToggle label="Показать плейсхолдер фото" value={tweaks.showPhoto} onChange={v => {
+          setTweak('showPhoto', v);
+          const ph = document.querySelector('.photo-placeholder');
+          if (ph) ph.style.display = v ? '' : 'none';
+        }}/>
+      </TweakSection>
+    </TweaksPanel>
+  );
+}
+
+// Mount roulette
+const rouletteEl = document.getElementById('roulette-root');
+if (rouletteEl) {
+  const rouletteRoot = ReactDOM.createRoot(rouletteEl);
+  rouletteRoot.render(<RouletteSection/>);
+}
+
+// Mount tweaks
+const tweaksEl = document.createElement('div');
+document.body.appendChild(tweaksEl);
+const tweaksRoot = ReactDOM.createRoot(tweaksEl);
+tweaksRoot.render(<TweaksApp/>);
+</script>
+
+<script>
+// ─── CINEMATIC INTRO ───
+(function() {
+  const overlay = document.getElementById('intro-overlay');
+  let dismissed = false;
+
+  function dismiss() {
+    if (dismissed) return;
+    dismissed = true;
+    overlay.classList.add('out');
+    setTimeout(() => { overlay.style.display = 'none'; }, 850);
+  }
+
+  // Show words with stagger
+  setTimeout(() => document.getElementById('iw-wedding').classList.add('show'), 300);
+  setTimeout(() => document.getElementById('iw-names').classList.add('show'), 900);
+
+  // Auto-dismiss after 2.8s
+  setTimeout(dismiss, 2800);
+
+  // Tap/click anywhere to skip
+  overlay.addEventListener('click', dismiss);
+  overlay.addEventListener('touchend', dismiss, { passive: true });
+})();
+
+// ─── SCROLL REVEAL ───
+(function() {
+  function observeCards() {
+    const cards = document.querySelectorAll('.card:not(.visible):not([data-observed])');
+    cards.forEach(c => {
+      c.setAttribute('data-observed', '1');
+      io.observe(c);
+    });
+  }
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.05 });
+
+  observeCards();
+
+  // Re-observe after React mounts dynamic cards
+  setTimeout(observeCards, 500);
+  setTimeout(observeCards, 1200);
+  setTimeout(observeCards, 2500);
+})();
+
+// ─── COUNTDOWN ───
+(function() {
+  const target = new Date('2026-06-04T15:00:00');
+  const els = {
+    days:    document.getElementById('cd-days'),
+    hours:   document.getElementById('cd-hours'),
+    minutes: document.getElementById('cd-minutes'),
+    seconds: document.getElementById('cd-seconds'),
+  };
+  const prev = {};
+  function pad(n) { return String(Math.max(0,n)).padStart(2,'0'); }
+  function flip(el, v) {
+    el.classList.remove('flip');
+    void el.offsetWidth;
+    el.textContent = v;
+    el.classList.add('flip');
+  }
+  function tick() {
+    const diff = Math.max(0, target - new Date());
+    const vals = {
+      days:    pad(Math.floor(diff/86400000)),
+      hours:   pad(Math.floor(diff%86400000/3600000)),
+      minutes: pad(Math.floor(diff%3600000/60000)),
+      seconds: pad(Math.floor(diff%60000/1000)),
+    };
+    Object.keys(vals).forEach(k => {
+      if (vals[k] !== prev[k]) { flip(els[k], vals[k]); prev[k] = vals[k]; }
+    });
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+// ─── FLOATING FLOWERS ───
+(function() {
+  const container = document.getElementById('deco-canvas');
+  const flowers = ['🌸','🌷','🌼','💐','🌿','🍀','💕'];
+  // Fewer flowers on mobile to avoid GPU overload
+  const isMobile = window.innerWidth < 600;
+  const count = isMobile ? 6 : 14;
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    const f = flowers[Math.floor(Math.random() * flowers.length)];
+    const size = Math.random() * 1.5 + 0.8;
+    const startX = Math.random() * 100;
+    const duration = Math.random() * 15 + 12;
+    const delay = Math.random() * 10;
+    const drift = (Math.random() - 0.5) * 120;
+
+    el.textContent = f;
+    el.style.cssText = `
+      position: absolute;
+      font-size: ${size}rem;
+      left: ${startX}vw;
+      top: ${Math.random() * 200}vh;
+      opacity: ${Math.random() * 0.3 + 0.1};
+      animation: floatUp ${duration}s ${delay}s linear infinite;
+      transform-origin: center;
+      pointer-events: none;
+      will-change: transform;
+      --drift: ${drift}px;
+    `;
+    container.appendChild(el);
+  }
+
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes floatUp {
+      0%   { transform: translateY(0)   rotate(0deg)   translateX(0); opacity: 0; }
+      10%  { opacity: 0.25; }
+      90%  { opacity: 0.15; }
+      100% { transform: translateY(-100vh) rotate(360deg) translateX(var(--drift)); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
+// ─── PHOTO FLIP SWAP ON HOVER ───
+(function() {
+  const container = document.getElementById('couple-photos');
+  if (!container) return;
+  const groom = document.getElementById('photo-groom');
+  const bride = document.getElementById('photo-bride');
+  const heart = document.getElementById('couple-heart');
+  let swapped = false;
+  let animating = false;
+
+  container.style.perspective = '800px';
+  heart.style.transition = 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1)';
+
+  function setTr(el) {
+    el.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.28s';
+    el.style.transformStyle = 'preserve-3d';
+  }
+  setTr(groom); setTr(bride);
+
+  function swap() {
+    if (animating) return;
+    animating = true;
+    const dir = swapped ? -1 : 1;
+
+    // Heart pulses in place
+    heart.style.transform = 'scale(1.5) rotate(15deg)';
+    setTimeout(function() { heart.style.transform = ''; }, 320);
+
+    // Phase 1: flip out
+    groom.style.transform = 'rotateY(' + (dir * 90) + 'deg) scale(0.85)';
+    groom.style.opacity = '0';
+    bride.style.transform = 'rotateY(' + (dir * 90) + 'deg) scale(0.85)';
+    bride.style.opacity = '0';
+
+    setTimeout(function() {
+      // Phase 2: swap order via CSS (heart stays at order:2)
+      if (!swapped) {
+        groom.style.order = '3';
+        bride.style.order = '1';
+      } else {
+        groom.style.order = '1';
+        bride.style.order = '3';
+      }
+      swapped = !swapped;
+
+      // Instant reset from opposite side without transition
+      groom.style.transition = 'none';
+      bride.style.transition = 'none';
+      groom.style.transform = 'rotateY(' + (dir * -90) + 'deg) scale(0.85)';
+      groom.style.opacity = '0';
+      bride.style.transform = 'rotateY(' + (dir * -90) + 'deg) scale(0.85)';
+      bride.style.opacity = '0';
+
+      void container.offsetWidth;
+
+      // Phase 3: spring in
+      setTr(groom); setTr(bride);
+      groom.style.transform = '';
+      groom.style.opacity = '';
+      bride.style.transform = '';
+      bride.style.opacity = '';
+
+      setTimeout(function() { animating = false; }, 550);
+    }, 280);
+  }
+
+  container.addEventListener('mouseenter', swap);
+  container.addEventListener('mouseleave', swap);
+  container.addEventListener('touchstart', function(e) {
+    e.preventDefault(); swap();
+  }, { passive: false });
+})();
+
+// ─── SUBTLE SCROLL PARALLAX ON WAVES ───
+(function() {
+  const wavyBg = document.querySelector('.wavy-bg');
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (wavyBg) wavyBg.style.transform = `translateY(${y * 0.08}px)`;
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
